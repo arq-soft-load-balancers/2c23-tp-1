@@ -11,6 +11,20 @@ services:
         links:
             - node
 
+    node:
+        image: node:lts-alpine
+        ports:
+            - "3000:3000"
+        links:
+            - redis
+        depends_on:
+            - redis
+
+    redis:
+        image: redis:alpine
+        ports:
+            - "6379:6379"
+
     graphite:
         image: graphiteapp/graphite-statsd:1.1.10-5
         volumes:
