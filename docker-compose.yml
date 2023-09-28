@@ -12,7 +12,9 @@ services:
             - node
 
     node:
-        image: node:lts-alpine
+        build:
+            context: .
+            dockerfile: Dockerfile
         ports:
             - "3000:3000"
         links:
