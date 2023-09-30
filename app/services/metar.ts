@@ -13,13 +13,21 @@ export class MetarService {
     async retrieveMetarInformation(station: string, hoursBefore: number): Promise<DecodedMetar> {
         const response = await axios.get(`${METAR_ENDPOINT}&stationString=${station}&hoursBeforeNow=${hoursBefore}`);
         const parsed = this.parser.parse(response.data).response;
+        this.handleParsedDataBody(parsed, station, hoursBefore)
+        try {
+            return decode(parsed.data.METAR.raw_text)!
+        } catch (error) {
+            throw new ServiceError(400, `FAILED WHILE DECODING METAR DATA FOR [STATION:${station}][HOURS_BEFORE:${hoursBefore}]`)
+        }
+    }
+
+    private handleParsedDataBody(parsed: any, station: string, hoursBefore: number) {
         if (!Object.hasOwn(parsed, 'data')) {
-            throw new ServiceError(400, `BAD REQUEST FOR [STATION:${station}][HOURS_BEFORE:${hoursBefore}][REASONS:${JSON.stringify(parsed.errors)}].`)
+            throw new ServiceError(400, `BAD REQUEST FOR [STATION:${station}][HOURS_BEFORE:${hoursBefore}][REASONS:${JSON.stringify(parsed.errors)}]`)
         }
         else if (!Object.hasOwn(parsed.data, "METAR")) {
-            throw new ServiceError(404, `METAR DATA NOT FOUND FOR [STATION:${station}][HOURS_BEFORE:${hoursBefore}].`)
+            throw new ServiceError(404, `METAR DATA NOT FOUND FOR [STATION:${station}][HOURS_BEFORE:${hoursBefore}]`)
         }
-        return decode(parsed.METAR.raw_text)!;
     }
 
 }

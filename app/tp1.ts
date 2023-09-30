@@ -20,7 +20,7 @@ app.get("/ping", (req, res) => {
 
 app.get("/metar", async (req, res, next) => {
     try {
-        const metar = await METAR_SERVICE.retrieveMetarInformation('PEPE', 1);
+        const metar = await METAR_SERVICE.retrieveMetarInformation('pepe', 1);
         res.status(200).send(metar);
     } catch (error) {
         next(error);
