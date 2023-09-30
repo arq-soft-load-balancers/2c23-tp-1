@@ -7,7 +7,7 @@ export class ServiceError extends Error {
     }
 
     public log() {
-        console.log(`Status:${this.status} - Message: ${this.message} - Stacktrace: ${this.stack}`)
+        console.log(`[LOGGER] Status:${this.status} - Message: ${this.message}`)
     }
 
 }
