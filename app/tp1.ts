@@ -3,12 +3,15 @@ import 'dotenv/config'
 
 import { ServiceErrorHandler } from "./services/errors/error-handlers";
 import { MetarService } from "./services/metar";
+import { SpaceFlightService } from "./services/spaceflight";
+import { QuoteService } from "./services/quote";
 
 const PORT = process.env.PORT
 const app = express()
 
 const METAR_SERVICE = new MetarService();
-
+const SPACE_SERVICE = new SpaceFlightService();
+const QUOTE_SERVICE = new QuoteService();
 
 app.get("/", (req, res) => {
     res.send("TP1 - Arquitectura del Software")
@@ -27,17 +30,19 @@ app.get("/metar", async (req, res, next) => {
     }
 })
 
-app.get("/spaceflight_news", (req, res, next) => {
+app.get("/spaceflight_news", async (req, res, next) => {
     try {
-        res.send("TP1 - Arquitectura del Software")
+        const spaceTitles = await SPACE_SERVICE.retrieveSpaceNews(10);
+        res.status(200).send(spaceTitles)
     } catch (error) {
         next(error);
     }
 })
 
-app.get("/quote", (req, res, next) => {
+app.get("/quote", async (req, res, next) => {
     try {
-        res.send("TP1 - Arquitectura del Software")
+        const quote = await QUOTE_SERVICE.retrieveQuote();
+        res.status(200).send(quote)
     } catch (error) {
         next(error);
     }

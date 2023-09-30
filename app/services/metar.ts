@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from "axios"
+import axios from "axios"
 import { XMLParser } from "fast-xml-parser";
 import { decode } from "metar-decoder";
 import { ServiceError } from "./errors/service-error";
@@ -15,7 +15,8 @@ export class MetarService {
         const parsed = this.parser.parse(response.data).response;
         this.handleParsedDataBody(parsed, station, hoursBefore)
         try {
-            return decode(parsed.data.METAR.raw_text)!
+            const raw_text = parsed.data.METAR.raw_text
+            return decode(raw_text)!
         } catch (error) {
             throw new ServiceError(400, `FAILED WHILE DECODING METAR DATA FOR [STATION:${station}][HOURS_BEFORE:${hoursBefore}]`)
         }
