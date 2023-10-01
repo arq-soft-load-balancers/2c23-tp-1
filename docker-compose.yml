@@ -10,24 +10,30 @@ services:
             - ./store/static/files:/static:ro
         links:
             - node
+        networks:
+            - loadbalancing
 
     node:
         build:
             context: .
             dockerfile: Dockerfile
+        deploy:
+            replicas: 3
         env_file:
             - app/.env
-        ports:
-            - "3000:3000"
         links:
             - redis
         depends_on:
             - redis
+        networks:
+            - loadbalancing
 
     redis:
         image: redis:alpine
         ports:
             - "6379:6379"
+        networks:
+            - loadbalancing
 
     graphite:
         image: graphiteapp/graphite-statsd:1.1.10-5
@@ -38,6 +44,8 @@ services:
             - "8090:80"
             - "8125:8125/udp"
             - "8126:8126"
+        networks:
+            - loadbalancing
 
     grafana:
         image: grafana/grafana:10.1.0
@@ -45,6 +53,8 @@ services:
             - "80:3000"
         volumes:
             - "grafana_config:/var/lib/grafana"
+        networks:
+            - loadbalancing
 
     cadvisor:
         image: gcr.io/cadvisor/cadvisor:v0.47.2
@@ -58,7 +68,12 @@ services:
             - "/var/run:/var/run:rw"
             - "/sys:/sys:ro"
             - "/var/lib/docker/:/var/lib/docker:ro"
+        networks:
+            - loadbalancing
 
 volumes:
     grafana_config:
         driver: local
+
+networks:
+    loadbalancing:
