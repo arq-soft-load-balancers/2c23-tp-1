@@ -29,7 +29,6 @@ async function cleanup() {
     else process.exit();
 };
 
-
 const METAR_SERVICE = new MetarService();
 const SPACE_SERVICE = new SpaceFlightService();
 const QUOTE_SERVICE = new QuoteService();
@@ -54,7 +53,10 @@ app.get("/metar", async (req, res, next) => {
 
 app.get("/spaceflight_news", async (req, res, next) => {
     try {
-        const spaceTitles = await SPACE_SERVICE.retrieveSpaceNews(5);
+        const use_cache = req.headers['cache'];
+        const spaceTitles = (use_cache === undefined) 
+        ? await SPACE_SERVICE.retrieveSpaceNews(5)
+        : await SPACE_SERVICE.retrieveSpaceNewsCached(5);
         res.status(200).send(spaceTitles)
     } catch (error) {
         next(error);
