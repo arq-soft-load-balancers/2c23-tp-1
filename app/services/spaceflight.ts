@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios"
 import { ServiceError } from "./errors/service-error.js"
 import { Article } from "./dtos/article.js"
-import { redis } from "../tp1.js"
+import { METRIC_SERVICE, redis } from "../tp1.js"
 
 const SPACE_FLIGHT_ENDPOINT = "https://api.spaceflightnewsapi.net/v3/articles?_limit="
 const CACHED_NEWS_KEY = "space_news"
@@ -9,7 +9,10 @@ const CACHED_NEWS_KEY = "space_news"
 export class SpaceFlightService {
     
     async retrieveSpaceNews(amount: number): Promise<string[]> {
+        const start = METRIC_SERVICE.clock.getTime();
         const response = await axios.get<Article[]>(`${SPACE_FLIGHT_ENDPOINT}${amount}`)
+        const end = METRIC_SERVICE.clock.getTime();
+        METRIC_SERVICE.statsClient.timing("space.endpoint_time", end - start)
         this.sanitizeArticles(response)
         return this.extractTitles(response.data)
     }
