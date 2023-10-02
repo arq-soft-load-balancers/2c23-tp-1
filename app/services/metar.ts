@@ -34,7 +34,7 @@ export class MetarService {
         if (cached_metar === null) {
             console.log(`METAR NOT FOUND IN CACHE FOR ${station} - REFRESHING...`)
             const metar = await this.retrieveMetarInformation(station);
-            await redis.set(current_key, JSON.stringify(metar), {EX: 60 * 5})
+            await redis.set(current_key, JSON.stringify(metar), {EX: 60})
             return metar;
         }
         console.log(`CACHE HIT FOR METAR -- ${station}`)

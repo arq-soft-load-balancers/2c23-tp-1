@@ -22,7 +22,7 @@ export class SpaceFlightService {
         if (cached_news === null) {
             console.log("SPACE_NEWS NOT FOUND IN CACHE - REFRESHING...")
             const news = await this.retrieveSpaceNews(amount);
-            await redis.set(CACHED_NEWS_KEY, JSON.stringify(news), {EX: 60})
+            await redis.set(CACHED_NEWS_KEY, JSON.stringify(news), {EX: 30})
             return news;
         }
         console.log("USING CACHE FOR SPACE_NEWS")
