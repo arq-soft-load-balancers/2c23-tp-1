@@ -7,6 +7,7 @@ import { SpaceFlightService } from "./services/spaceflight.js";
 import { QuoteService } from "./services/quote.js";
 import { createClient } from "redis";
 import { exit } from "process";
+import { ServiceError } from "./services/errors/service-error.js";
 
 const PORT = process.env.PORT
 const app = express()
@@ -44,7 +45,13 @@ app.get("/ping", (req, res) => {
 app.get("/metar", async (req, res, next) => {
     try {
         const station = req.query.station
-        const metar = await METAR_SERVICE.retrieveMetarInformation(station);
+        if (station == undefined) {
+            throw new ServiceError(400, `INVALID STATION NAME [${station}] PLEASE SEND A VALID STRING.`)
+        }
+        const use_cache = req.headers['cache'];
+        const metar = (use_cache === undefined) 
+        ? await METAR_SERVICE.retrieveMetarInformation(station)
+        : await METAR_SERVICE.retrieveMetarInformationCached(station);
         res.status(200).send(metar);
     } catch (error) {
         next(error);
