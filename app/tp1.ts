@@ -1,13 +1,34 @@
 import express from "express"
 import 'dotenv/config'
 
-import { ServiceErrorHandler } from "./services/errors/error-handlers";
-import { MetarService } from "./services/metar";
-import { SpaceFlightService } from "./services/spaceflight";
-import { QuoteService } from "./services/quote";
+import { ServiceErrorHandler } from "./services/errors/error-handlers.js";
+import { MetarService } from "./services/metar.js";
+import { SpaceFlightService } from "./services/spaceflight.js";
+import { QuoteService } from "./services/quote.js";
+import { createClient } from "redis";
+import { exit } from "process";
 
 const PORT = process.env.PORT
 const app = express()
+export const redis = await createClient({url: process.env.REDIS_URL})
+  .on('error', err => {
+    console.log('Redis Client Error', err)
+    exit();
+  })
+  .connect();
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);
+  
+async function cleanup() {
+    if (redis.isOpen) {
+        await redis.flushAll();
+        await redis.quit();
+        process.exit();
+    }
+    else process.exit();
+};
+
 
 const METAR_SERVICE = new MetarService();
 const SPACE_SERVICE = new SpaceFlightService();
@@ -33,7 +54,7 @@ app.get("/metar", async (req, res, next) => {
 
 app.get("/spaceflight_news", async (req, res, next) => {
     try {
-        const spaceTitles = await SPACE_SERVICE.retrieveSpaceNews(10);
+        const spaceTitles = await SPACE_SERVICE.retrieveSpaceNews(5);
         res.status(200).send(spaceTitles)
     } catch (error) {
         next(error);
@@ -42,7 +63,10 @@ app.get("/spaceflight_news", async (req, res, next) => {
 
 app.get("/quote", async (req, res, next) => {
     try {
-        const quote = await QUOTE_SERVICE.retrieveQuote();
+        const use_cache = req.headers['cache'];
+        const quote = (use_cache === undefined) 
+        ? await QUOTE_SERVICE.retrieveQuote()
+        : await QUOTE_SERVICE.retrieveQuoteCached();
         res.status(200).send(quote)
     } catch (error) {
         next(error);
@@ -50,4 +74,6 @@ app.get("/quote", async (req, res, next) => {
 })
 
 app.use(ServiceErrorHandler)
-app.listen(PORT, () => console.log(`Server listening at localhost:${PORT}`))
+app.listen(PORT, () => {
+    console.log(`Server listening at localhost:${PORT}`);
+})

@@ -1,8 +1,8 @@
 import axios from "axios"
 import { XMLParser } from "fast-xml-parser";
 import { decode } from "metar-decoder";
-import { ServiceError } from "./errors/service-error";
-import { DecodedMetar } from "metar-decoder/lib/types";
+import { ServiceError } from "./errors/service-error.js";
+import { DecodedMetar } from "metar-decoder/lib/types.js";
 
 const METAR_ENDPOINT = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml"
 const HOURS_BEFORE = 1;

@@ -1,5 +1,5 @@
 import e, { NextFunction, Request, Response } from "express";
-import { ServiceError } from "./service-error";
+import { ServiceError } from "./service-error.js";
 
 function errorHandler(error: Error, request: Request, response: Response , next: NextFunction) {
     if (error instanceof ServiceError) {

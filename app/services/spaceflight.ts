@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios"
-import { ServiceError } from "./errors/service-error"
-import { Article } from "./dtos/article"
+import { ServiceError } from "./errors/service-error.js"
+import { Article } from "./dtos/article.js"
 
 const SPACE_FLIGHT_ENDPOINT = "https://api.spaceflightnewsapi.net/v3/articles?_limit="
 
