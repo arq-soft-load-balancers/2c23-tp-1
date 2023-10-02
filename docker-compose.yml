@@ -10,6 +10,8 @@ services:
             - ./store/static/files:/static:ro
         links:
             - node
+        depends_on:
+            - node
         networks:
             - loadbalancing
 
