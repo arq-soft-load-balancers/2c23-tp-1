@@ -7,6 +7,7 @@ import { MetricService, TimingType } from "./metrics.js";
 const QUOTE_ENDPOINT = "https://api.quotable.io/quotes/random?limit="
 const QUOTE_SINGLE_LIMIT = 1;
 const QUOTE_CACHE_LIMIT = 50;
+const QUOTE_TTL = 5;
 const CACHED_QUOTES_KEY = "quotes";
 
 export class QuoteService {
@@ -29,7 +30,7 @@ export class QuoteService {
             const single_quote: Quote = parsed_quotes.pop()!;    
             if (parsed_quotes.length > 0) {
                 console.log(`FOUND CACHED QUOTES -> REMAINING: ${parsed_quotes.length}`)
-                await redis.set(CACHED_QUOTES_KEY, JSON.stringify(parsed_quotes), {EX: 30})
+                await redis.set(CACHED_QUOTES_KEY, JSON.stringify(parsed_quotes), {EX: QUOTE_TTL})
             }
             else {
                 console.log(`RAN OUT OF CACHED QUOTES.`)
@@ -40,7 +41,7 @@ export class QuoteService {
         else if (cached_quotes === null) {
             const response = await axios.get<Quote[]>(`${QUOTE_ENDPOINT}${QUOTE_CACHE_LIMIT}`)
             this.sanitizeQuote(response)
-            await redis.set(CACHED_QUOTES_KEY, JSON.stringify(response.data), {EX: 30})
+            await redis.set(CACHED_QUOTES_KEY, JSON.stringify(response.data), {EX: QUOTE_TTL})
             console.log(`REFILLED CACHED QUOTES.`)
         }
         return this.retrieveQuote();

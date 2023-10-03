@@ -9,6 +9,7 @@ import { MetricService, TimingType } from "./metrics.js";
 const METAR_ENDPOINT = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml"
 const HOURS_BEFORE = 1;
 const CACHE_METAR_KEY = "METAR_"
+const METAR_TTL = 10
 
 export class MetarService {
 
@@ -36,12 +37,13 @@ export class MetarService {
         if (cached_metar === null) {
             console.log(`METAR NOT FOUND IN CACHE FOR ${station} - REFRESHING...`)
             const metar = await this.retrieveMetarInformation(station);
-            await redis.set(current_key, JSON.stringify(metar), {EX: 60})
+            await redis.set(current_key, JSON.stringify(metar), {EX: METAR_TTL})
             return metar
         }
         console.log(`CACHE HIT FOR METAR -- ${station}`)
         return JSON.parse(cached_metar);
     }
+    
 
     private handleParsedDataBody(parsed: any, station: string) {
         if (!Object.hasOwn(parsed, 'data')) {

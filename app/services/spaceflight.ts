@@ -6,6 +6,7 @@ import { MetricService, TimingType } from "./metrics.js"
 
 const SPACE_FLIGHT_ENDPOINT = "https://api.spaceflightnewsapi.net/v3/articles?_limit="
 const CACHED_NEWS_KEY = "space_news"
+const NEWS_TTL = 5;
 
 export class SpaceFlightService {
 
@@ -24,7 +25,7 @@ export class SpaceFlightService {
         if (cached_news === null) {
             console.log("SPACE_NEWS NOT FOUND IN CACHE - REFRESHING...")
             const news = await this.retrieveSpaceNews(amount);
-            await redis.set(CACHED_NEWS_KEY, JSON.stringify(news), {EX: 30})
+            await redis.set(CACHED_NEWS_KEY, JSON.stringify(news), {EX: NEWS_TTL})
             return news;
         }
         console.log("USING CACHE FOR SPACE_NEWS")
