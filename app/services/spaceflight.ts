@@ -1,18 +1,20 @@
 import axios, { AxiosResponse } from "axios"
 import { ServiceError } from "./errors/service-error.js"
 import { Article } from "./dtos/article.js"
-import { METRIC_SERVICE, redis } from "../tp1.js"
+import { redis } from "../tp1.js"
+import { MetricService, TimingType } from "./metrics.js"
 
 const SPACE_FLIGHT_ENDPOINT = "https://api.spaceflightnewsapi.net/v3/articles?_limit="
 const CACHED_NEWS_KEY = "space_news"
 
 export class SpaceFlightService {
+
+    public metricReporter = new MetricService("spaceflight");
     
     async retrieveSpaceNews(amount: number): Promise<string[]> {
-        const start = METRIC_SERVICE.clock.getTime();
-        const response = await axios.get<Article[]>(`${SPACE_FLIGHT_ENDPOINT}${amount}`)
-        const end = METRIC_SERVICE.clock.getTime();
-        METRIC_SERVICE.statsClient.timing("space.endpoint_time", end - start)
+        const response = await this.metricReporter.executeAndTime(async () => {
+            return await axios.get<Article[]>(`${SPACE_FLIGHT_ENDPOINT}${amount}`)
+        }, TimingType.EXTERNAL)
         this.sanitizeArticles(response)
         return this.extractTitles(response.data)
     }

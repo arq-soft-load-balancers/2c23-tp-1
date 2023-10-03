@@ -3,7 +3,8 @@ import { XMLParser } from "fast-xml-parser";
 import { decode } from "metar-decoder";
 import { ServiceError } from "./errors/service-error.js";
 import { DecodedMetar } from "metar-decoder/lib/types.js";
-import { METRIC_SERVICE, redis } from "../tp1.js";
+import { redis } from "../tp1.js";
+import { MetricService, TimingType } from "./metrics.js";
 
 const METAR_ENDPOINT = "https://www.aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml"
 const HOURS_BEFORE = 1;
@@ -12,12 +13,12 @@ const CACHE_METAR_KEY = "METAR_"
 export class MetarService {
 
     private parser: XMLParser = new XMLParser();
+    public metricReporter = new MetricService("metar");
 
     async retrieveMetarInformation(station: any): Promise<DecodedMetar[]> {
-        const start = METRIC_SERVICE.clock.getTime();
-        const response = await axios.get(`${METAR_ENDPOINT}&stationString=${station}&hoursBeforeNow=${HOURS_BEFORE}`);
-        const end = METRIC_SERVICE.clock.getTime();
-        METRIC_SERVICE.statsClient.timing("metar.endpoint_time", end - start)
+        const response = await this.metricReporter.executeAndTime(async () => {
+            return await axios.get(`${METAR_ENDPOINT}&stationString=${station}&hoursBeforeNow=${HOURS_BEFORE}`)
+        }, TimingType.EXTERNAL);
         const parsed = this.parser.parse(response.data).response;
         this.handleParsedDataBody(parsed, station)
         let metar = [parsed.data.METAR].flat();

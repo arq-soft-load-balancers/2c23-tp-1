@@ -1,7 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import { Quote } from "./dtos/quote.js";
 import { ServiceError } from "./errors/service-error.js";
-import { METRIC_SERVICE, redis } from "../tp1.js";
+import { redis } from "../tp1.js";
+import { MetricService, TimingType } from "./metrics.js";
 
 const QUOTE_ENDPOINT = "https://api.quotable.io/quotes/random?limit="
 const QUOTE_SINGLE_LIMIT = 1;
@@ -10,11 +11,12 @@ const CACHED_QUOTES_KEY = "quotes";
 
 export class QuoteService {
 
+    public metricReporter = new MetricService("quotes");
+
     async retrieveQuote(): Promise<Quote> {
-        const start = METRIC_SERVICE.clock.getTime();
-        const response = await axios.get<Quote[]>(`${QUOTE_ENDPOINT}${QUOTE_SINGLE_LIMIT}`)
-        const end = METRIC_SERVICE.clock.getTime();
-        METRIC_SERVICE.statsClient.timing("quote.endpoint_time", end - start)
+        const response = await this.metricReporter.executeAndTime(async () => {
+            return await axios.get<Quote[]>(`${QUOTE_ENDPOINT}${QUOTE_SINGLE_LIMIT}`)
+        }, TimingType.EXTERNAL);
         this.sanitizeQuote(response)
         const quote = response.data[0];
         return new Quote(quote.author, quote.content)
