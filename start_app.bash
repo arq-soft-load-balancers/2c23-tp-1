@@ -2,5 +2,5 @@
 
 cd app
 docker-compose down
-docker-compsoe build
+docker-compose build
 docker-compose up -d
