@@ -11,13 +11,18 @@ import { ServiceError } from "./services/errors/service-error.js";
 import { MetricService } from "./services/metrics.js";
 
 const PORT = process.env.PORT
+const REDIS_STRING = process.env.REDIS_URL
+
 const app = express()
-export const redis = await createClient({url: process.env.REDIS_URL})
-  .on('error', err => {
+export const redis = await createClient({url: REDIS_STRING})
+.on('error', err => {
     console.log('Redis Client Error', err)
     exit();
-  })
-  .connect();
+})
+.on('connect' , () => {
+    console.log(`Redis Client is UP at ${REDIS_STRING}!`)
+})
+.connect();
 
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
@@ -65,7 +70,7 @@ app.get("/metar", async (req, res, next) => {
     }
 })
 
-app.get("/spaceflight_news", async (req, res, next) => {
+app.get("/spaceflight_news",async (req, res, next) => {
     try {
         const use_cache = req.headers['cache'];
         const start = METRIC_SERVICE.clock.getTime();

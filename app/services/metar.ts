@@ -13,16 +13,17 @@ export class MetarService {
 
     private parser: XMLParser = new XMLParser();
 
-    async retrieveMetarInformation(station: any): Promise<DecodedMetar> {
+    async retrieveMetarInformation(station: any): Promise<DecodedMetar[]> {
         const start = METRIC_SERVICE.clock.getTime();
         const response = await axios.get(`${METAR_ENDPOINT}&stationString=${station}&hoursBeforeNow=${HOURS_BEFORE}`);
         const end = METRIC_SERVICE.clock.getTime();
         METRIC_SERVICE.statsClient.timing("metar.endpoint_time", end - start)
         const parsed = this.parser.parse(response.data).response;
         this.handleParsedDataBody(parsed, station)
+        let metar = [parsed.data.METAR].flat();
+        metar = metar.map((data) => {return data.raw_text})
         try {
-            const raw_text = parsed.data.METAR.raw_text
-            return decode(raw_text)!
+            return metar.map((data) => decode(data)!)
         } catch (error) {
             throw new ServiceError(400, `FAILED WHILE DECODING METAR DATA FOR [STATION:${station}]`)
         }
@@ -35,7 +36,7 @@ export class MetarService {
             console.log(`METAR NOT FOUND IN CACHE FOR ${station} - REFRESHING...`)
             const metar = await this.retrieveMetarInformation(station);
             await redis.set(current_key, JSON.stringify(metar), {EX: 60})
-            return metar;
+            return metar
         }
         console.log(`CACHE HIT FOR METAR -- ${station}`)
         return JSON.parse(cached_metar);
