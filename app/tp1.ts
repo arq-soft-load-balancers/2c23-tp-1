@@ -16,6 +16,12 @@ const REDIS_STRING = process.env.REDIS_URL
 
 const app = express()
 
+const limiter = rateLimit({
+	windowMs: 2 * 60 * 1000, // 2 minute
+	limit: 500
+})
+app.use(limiter)
+
 const METAR_SERVICE = new MetarService();
 const SPACE_SERVICE = new SpaceFlightService();
 const QUOTE_SERVICE = new QuoteService();
