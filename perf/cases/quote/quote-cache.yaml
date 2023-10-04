@@ -44,4 +44,4 @@ scenarios:
   - name: Quotes [Cache]
     flow:
       - get:
-          url: "/quotes"
+          url: "/quote"
