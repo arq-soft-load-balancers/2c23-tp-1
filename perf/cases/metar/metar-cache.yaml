@@ -7,9 +7,6 @@ config:
         order: "random"
         fields: 
           - "station"
-      defaults:
-        headers:
-            cache: "TRUE"
       plugins:
         statsd:
           host: localhost

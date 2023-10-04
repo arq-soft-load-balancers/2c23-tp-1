@@ -2,9 +2,6 @@ config:
   environments:
     api:
       target: 'http://localhost:5555'
-      defaults:
-        headers:
-            cache: "TRUE"
       plugins:
         statsd:
           host: localhost

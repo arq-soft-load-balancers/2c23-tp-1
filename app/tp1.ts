@@ -16,12 +16,6 @@ const REDIS_STRING = process.env.REDIS_URL
 
 const app = express()
 
-const limiter = rateLimit({
-	windowMs: 1 * 60 * 1000, // 1 minute
-	limit: 500
-})
-app.use(limiter)
-
 export const redis = await createClient({url: REDIS_STRING})
 .on('error', err => {
     console.log('Redis Client Error', err)
@@ -63,10 +57,7 @@ app.get("/metar", async (req, res, next) => {
             throw new ServiceError(400, `INVALID STATION NAME [${station}] PLEASE SEND A VALID STRING.`)
         }
         const use_cache = req.headers['cache'];
-        const metar = await METAR_SERVICE.metricReporter.executeAndTime(async () => { return (use_cache === undefined) 
-            ? await METAR_SERVICE.retrieveMetarInformation(station)
-            : await METAR_SERVICE.retrieveMetarInformationCached(station);
-        }, TimingType.INTERNAL)
+        const metar = await METAR_SERVICE.metricReporter.executeAndTime(async () => {return await METAR_SERVICE.retrieveMetarInformationCached(station)}, TimingType.INTERNAL)
         res.status(200).send(metar);
     } catch (error) {
         next(error);
@@ -76,10 +67,7 @@ app.get("/metar", async (req, res, next) => {
 app.get("/spaceflight_news",async (req, res, next) => {
     try {
         const use_cache = req.headers['cache'];
-        const spaceTitles = await SPACE_SERVICE.metricReporter.executeAndTime(async () => { return (use_cache === undefined) 
-            ? await SPACE_SERVICE.retrieveSpaceNews(5)
-            : await SPACE_SERVICE.retrieveSpaceNewsCached(5);
-        }, TimingType.INTERNAL)
+        const spaceTitles = await SPACE_SERVICE.metricReporter.executeAndTime(async () => {return await SPACE_SERVICE.retrieveSpaceNewsCached(5)}, TimingType.INTERNAL)
         res.status(200).send(spaceTitles)
     } catch (error) {
         next(error);
@@ -89,10 +77,7 @@ app.get("/spaceflight_news",async (req, res, next) => {
 app.get("/quote", async (req, res, next) => {
     try {
         const use_cache = req.headers['cache'];
-        const quote = await QUOTE_SERVICE.metricReporter.executeAndTime(async () => { return (use_cache === undefined) 
-            ? await QUOTE_SERVICE.retrieveQuote()
-            : await QUOTE_SERVICE.retrieveQuoteCached();
-        }, TimingType.INTERNAL)
+        const quote = await QUOTE_SERVICE.metricReporter.executeAndTime(async () => {return await QUOTE_SERVICE.retrieveQuoteCached()}, TimingType.INTERNAL)
         res.status(200).send(quote)
     } catch (error) {
         next(error);
