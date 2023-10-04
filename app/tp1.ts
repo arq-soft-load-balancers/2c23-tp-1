@@ -8,12 +8,20 @@ import { QuoteService } from "./services/quote.js";
 import { createClient } from "redis";
 import { exit } from "process";
 import { ServiceError } from "./services/errors/service-error.js";
-import { MetricService, TimingType } from "./services/metrics.js";
+import { TimingType } from "./services/metrics.js";
+import rateLimit from "express-rate-limit";
 
 const PORT = process.env.PORT
 const REDIS_STRING = process.env.REDIS_URL
 
 const app = express()
+
+const limiter = rateLimit({
+	windowMs: 1 * 60 * 1000, // 1 minute
+	limit: 500
+})
+app.use(limiter)
+
 export const redis = await createClient({url: REDIS_STRING})
 .on('error', err => {
     console.log('Redis Client Error', err)
