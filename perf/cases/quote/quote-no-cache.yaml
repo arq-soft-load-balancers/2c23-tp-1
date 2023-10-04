@@ -6,34 +6,37 @@ config:
         statsd:
           host: localhost
           port: 8125
-          prefix: "artillery-api.quote-no-cache"
+          prefix: "artillery-api"
 
   pool: 50 # All HTTP requests from all virtual users will be sent over the same connections
 
   phases:
     - name: Ramp [1]
-      duration: 30
+      duration: 20
       arrivalRate: 5
-      rampTo: 50
+      rampTo: 10
     - name: Plain [1]
-      duration: 60
-      arrivalRate: 50
-    - name: Ramp [2]
       duration: 30
-      arrivalRate: 50
-      rampTo: 100
-    - name: Plain [2]
-      duration: 60
-      arrivalRate: 100
+      arrivalRate: 10
     - name: Spike [1]
-      duration: 25
-      arrivalRate: 200
-    - name: Plain [3]
-      duration: 60
-      arrivalRate: 150
-    - name: Ramp [Shutdown]
+      duration: 10
+      arrivalRate: 60
+    - name: Plain [2]
       duration: 30
-      arrivalRate: 150
+      arrivalRate: 25
+    - name: Ramp [2]
+      duration: 20
+      arrivalRate: 25
+      rampTo: 10
+    - name: Spike [1]
+      duration: 10
+      arrivalRate: 75
+    - name: Plain [3]
+      duration: 30
+      arrivalRate: 1
+    - name: Ramp [Shutdown]
+      duration: 5
+      arrivalRate: 1
       rampTo: 0
     
 
