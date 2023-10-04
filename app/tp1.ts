@@ -5,14 +5,11 @@ import { ServiceErrorHandler } from "./services/errors/error-handlers.js";
 import { MetarService } from "./services/metar.js";
 import { SpaceFlightService } from "./services/spaceflight.js";
 import { QuoteService } from "./services/quote.js";
-import { createClient } from "redis";
-import { exit } from "process";
 import { ServiceError } from "./services/errors/service-error.js";
 import { TimingType } from "./services/metrics.js";
-import rateLimit from "express-rate-limit";
+
 
 const PORT = process.env.PORT
-const REDIS_STRING = process.env.REDIS_URL
 
 const app = express()
 
