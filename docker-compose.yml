@@ -20,7 +20,7 @@ services:
             context: .
             dockerfile: Dockerfile
         deploy:
-            replicas: 1
+            replicas: 3
         env_file:
             - app/.env
         links:
