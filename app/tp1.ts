@@ -17,7 +17,7 @@ const REDIS_STRING = process.env.REDIS_URL
 const app = express()
 
 const limiter = rateLimit({
-	windowMs: 2 * 60 * 1000, // 2 minute
+	windowMs: 5 * 1000, // 5 Seconds - Limited to 500 requests.
 	limit: 500
 })
 app.use(limiter)
