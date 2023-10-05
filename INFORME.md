@@ -108,7 +108,6 @@ Para las distintas estrategias implementadas se sometieron a las APIs a la sigui
 > Recordatorio: Estos casos de prueba se encuentran en la carpeta perf, y pueden ser lanzados mediante el script de bash encontrado en dicha carpeta. Ademas de ser necesario se debe lanzar el comando "npm i" para instalar el plugin de Artillery.
 
 ### Caso Base
-
 #### Quote
 ![quote_1.png](files%2Fbase%2FQuote%2Fquote_1.png)
 ![quote_2.png](files%2Fbase%2FQuote%2Fquote_2.png)
@@ -143,7 +142,6 @@ Para las distintas estrategias implementadas se sometieron a las APIs a la sigui
 > Hipotesis: Si replicamos no evitariamos el deterioro de la API Externa pero si nos podria ayudar a evitar algunos ETIMEDOUT al quedar mejor distribuida la carga, una cache sigue siendo la mejor opcion a simple vista para evitar sobrecargar la API Externa.
 
 ### Caso Replicacion
-
 #### Quote
 ![quote_rep_1.png](files%2Freplicacion%2FQuote%2Fquote_rep_1.png)
 ![quote_rep_2.png](files%2Freplicacion%2FQuote%2Fquote_rep_2.png)
@@ -162,8 +160,7 @@ Para las distintas estrategias implementadas se sometieron a las APIs a la sigui
 
 > En este caso si observamos una mejora con respecto a los TIMEDOUT causados por el pico de trafico, sin embargo aun persisten, esto quizas ya que la API sigue teniendo tiempos de respuesta bastante elevados al empezar a ser saturada, causando que para Artillery tengamos algunas requests que siguen pasandose de tiempo.
 
-## Caso Rate-Limit
-
+### Caso Rate-Limit
 - Para la implentacion de este caso, se decidio ir con un rate-limit de 500 requests en una ventana de 5 segundos. (O el equivalente a 100 requests por segundo).
 
 #### Quote
@@ -184,8 +181,7 @@ Para las distintas estrategias implementadas se sometieron a las APIs a la sigui
 
 > Nuevamente el rate-limit logra evitar saturar la API de spaceflight, y consecuentemente el de nosotros. Nos deshacemos por completo de los 500 al costo de responder a mas usuarios con el 429, afectando nuestra disponibilidad para dar respuestas.
 
-## Caso Cache
-
+### Caso Cache
 #### Quote
 ![quote_cache_1.png](files%2Fcache%2FQuote%2Fquote_cache_1.png)
 ![quote_cache_2.png](files%2Fcache%2FQuote%2Fquote_cache_2.png)
