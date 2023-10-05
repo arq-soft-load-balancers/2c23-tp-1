@@ -33,15 +33,21 @@ config:
       duration: 20
       arrivalRate: 25
       rampTo: 10
-    - name: Spike [1]
+    - name: Spike [2]
       duration: 10
       arrivalRate: 75
     - name: Plain [3]
       duration: 30
       arrivalRate: 1
+    - name: Spike [3]
+      duration: 45
+      arrivalRate: 125
+    - name: Plain [3]
+      duration: 40
+      arrivalRate: 50
     - name: Ramp [Shutdown]
-      duration: 5
-      arrivalRate: 1
+      duration: 20
+      arrivalRate: 50
       rampTo: 0
     
 
