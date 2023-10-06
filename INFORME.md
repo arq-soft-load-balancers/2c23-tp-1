@@ -107,7 +107,7 @@ Para las distintas estrategias implementadas se sometieron a las APIs a la sigui
 
 > Recordatorio: Estos casos de prueba se encuentran en la carpeta perf, y pueden ser lanzados mediante el script de bash encontrado en dicha carpeta. Ademas de ser necesario se debe lanzar el comando "npm i" para instalar el plugin de Artillery.
 
-## Caso Base
+### Caso Base
 
 #### Quote
 ![quote_1.png](files%2Fbase%2FQuote%2Fquote_1.png)
