@@ -15,7 +15,7 @@
 
 ## Objetivo
 
-El objetivo del proyecto es implementar un servicio Node que consume servicios externos para comparar distintas estrategias/tecnologias y como estas impactan el los atributos de calidad.
+El objetivo del proyecto es implementar un servicio Node que consume servicios externos para comparar distintas estrategias/tecnologias y como estas impactan en los atributos de calidad.
 
 ## Tutorial de uso del servicio
 
