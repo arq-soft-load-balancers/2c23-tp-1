@@ -19,6 +19,8 @@ El objetivo del proyecto es implementar un servicio Node que consume servicios e
 
 ## Tutorial de uso del servicio
 
+Copiar el .env.example al .env para poder levantar el servicio.
+
 Para levantar el servicio hay que ubicarse en la raiz del proyecto y ejecutar el comando:
 
 ```
@@ -39,7 +41,7 @@ curl localhost:5555/ping
 ```
 
 ## Estrategias
-
+Cada estrategia esta en una rama distinta, en la rama main estan todas las implementaciones juntas.
 ### Caso Base
 El caso base se usa como metrica contra la cual vamos a comparar las distintas estrategias. 
 ### Caso replicacion
@@ -49,7 +51,7 @@ En el caso cache se utiliza un servicio de almacenamiento REDIS y tecnicas de al
 ### Caso Rate-Limit
 En el caso del rate-limit se decidió implementar mediante el uso de la libreria "express-rate-limit", alternativamente se podria haber usado la misma feature a traves de nginx. lo que nos permite esta capabilidad es controlar la frecuencia con la cual los usuarios acceden a nuestras funcionalidades, evitando asi alguna saturación impuesta de parte de los componentes externos que se usan en la app.
 ## Conectores y Servicios
-
+> NOTA: el diagrama muestra una conexion HTTP entre graphite y el webserver, esto no es asi, se comunica con Statsd
 ### Caso Base
 En el caso base el servicio esta conformado por un Reverse Proxy (nginx) que dirige los pedidos del cliente al web server (node) que a su vez hace pedidos a APIs externas (metar, quote, spaceflight news). Se obtienen metricas de uso usando Graphite.
 ![Caso_base.png](files%2Fcomponents%2FCaso_base.png)
@@ -61,8 +63,8 @@ En el caso de cache se agrega una cache (Redis) para reducir los pedidos a las A
 ![Cache.png](files%2Fcomponents%2FCache.png)
 ### Caso Rate-Limit
 En el caso del rate-limit se configura un rate limit en el web-server, esto limita la cantidad de pedidos que puede ahcer un cliente.
-![Rate_limit.png](files%2Fcomponents%2FRate_limit.png)
-
+![Rate_limit.jpeg](files%2Fcomponents%2FRate_limit.jpeg)
+> NOTA: el rate-limit esta en el servicio de Node no en el Nginx
 ## Escenarios
 
 Para las distintas estrategias implementadas se sometieron a las APIs a la siguiente prueba de carga genérica de requests (mediante Artillery), de esta manera poder obtener un comportamiento de control y comparable entre las diversas estrategias.
@@ -196,27 +198,26 @@ Para las distintas estrategias implementadas se sometieron a las APIs a la sigui
 ![metar_cache_1.png](files%2Fcache%2FMetar%2Fmetar_cache_1.png)
 ![metar_cache_2.png](files%2Fcache%2FMetar%2Fmetar_cache_2.png)
 
-> Para la API de Metar implementamos Lazy Population, almacenando el METAR por 5 segundos de cualquier codigo que NO este presente en el REDIS.
+> Para la API de Metar, implementamos una estrategia de "Lazy Population" que almacena el METAR durante 5 segundos para cualquier código que NO esté presente en el REDIS.
 
-> En comparacion con el caso base la cache logro que evitaramos por completo los ETIMEDOUT y el rate-limit (403) impuesto por la API Externa.
+> En comparación con el escenario base, la caché logró que evitáramos por completo los errores de "ETIMEDOUT" y los límites de velocidad ("rate-limit" 403) impuestos por la API externa.
 
-> El response time de nuestro endpoint nuevamente se mantuve muy bajo gracias a la cache y el de la API externa solo alcanza picos para refrescar la cache de vez en cuando.
+> El tiempo de respuesta de nuestro punto de acceso se mantuvo nuevamente en niveles muy bajos gracias a la caché, mientras que el tiempo de respuesta de la API externa solo experimenta picos ocasionales cuando necesita refrescar la caché.
 
 #### Spaceflight News
 ![space_cache_1.png](files%2Fcache%2FSpace%2Fspace_cache_1.png)
 ![space_cache_2.png](files%2Fcache%2FSpace%2Fspace_cache_2.png)
 
-> Para el spaceflight optamos nuevamente por Lazy Population de las ultimas 5 noticias por 10 segundos.
+> Para la API de Spaceflight, hemos optado una vez más por la estrategia de "Lazy Population" para almacenar las últimas 5 noticias durante 10 segundos.
 
-> Nuevamente, desaparecen todos los ETIMEDOUT y 500 del caso base ya que se reducen drasticamente las llamadas por API. El tiempo de respuesta de nuestro endpoint es minimo y evitamos saturar la API de spaceflight con llamados redundantes que quizas dentro del rango de tiempo de ejecucion nunca vayan a cambiar su respuesta.
-
+> Una vez más, hemos logrado eliminar completamente los errores de "ETIMEDOUT" y los códigos de error "500" que experimentábamos en el caso base, gracias a la drástica reducción en el número de llamadas a la API. El tiempo de respuesta de nuestro punto de acceso es mínimo, y evitamos sobrecargar la API de Spaceflight con llamadas redundantes que, durante el tiempo de ejecución, es poco probable que cambien su respuesta.
 
 ## Conclusiones
 
-En comparacion del caso base, cada una de las tacticas presenta un beneficio, sin embargo, depende mucho de los atributos de calidad que mas se valoren en el caso especifico.
+En comparación con el escenario base, cada una de las estrategias presenta beneficios notables. Sin embargo, la elección depende en gran medida de los atributos de calidad que se valoren más en el caso específico.
 
-En el caso del rate-limiting, sirve para ayudar a no saturar los servicios externos a nuestra app y contribuir a mantener la disponibilidad sin embargo esto es logrado sacrificando una gran parte de los usuarios que le termina respondiendo.
+En el caso del "rate-limiting," esta táctica contribuye significativamente a evitar la saturación de los servicios externos de nuestra aplicación y, por ende, a mantener su disponibilidad. Sin embargo, este logro viene acompañado del sacrificio de una porción sustancial de usuarios a quienes se les podría denegar el acceso.
 
-La replicación mediante la buena distribucion de requests permite que nuestra app sea mas robusta al momento de responder a grandes cargas de requests y el procesamiento interno que estas conlleven, sin embargo los servicios externos siguen recibiendo la misma carga. Un dato que vale la pena mencionar es que al ser todos los llamados desde la misma maquina, para estos servicios externos sigue siendo la misma IP que los usa, por ende llegamos a ser mas limitados de lo que deberiamos si usaramos infraestructura real, es decir, otra maquina se podrian llegar a ver mejores resultados.
+Por otro lado, la replicación mediante una cuidadosa distribución de solicitudes permite que nuestra aplicación responda de manera robusta a cargas masivas de peticiones y a las operaciones internas asociadas a ellas. No obstante, los servicios externos siguen experimentando la misma carga. Vale la pena señalar que, dado que todas las solicitudes provienen de la misma máquina, los servicios externos aún las perciben como originadas desde una única IP, lo que podría limitarnos más de lo deseado en comparación con el uso de una infraestructura física, como otra máquina, que podría arrojar resultados más favorables.
 
-Por ultimo pero no menos importante, la cache, esta evidentemente dio los mejores resultados, ademas de mantener los tiempos de respuestas MUY bajos, evitaba que las APIs externas fueran saturadas con pedidos redundantes, el unico momento en donde esta tecnica se ve vulnerada es en los pequeños momentos en el que debe refrescarse y puede llegar a causar picos de tiempos de respuesta.
+Por último, pero no menos importante, la estrategia de almacenamiento en caché arrojó resultados sobresalientes. Además de mantener tiempos de respuesta extremadamente bajos, esta técnica evita que las APIs externas se saturen con solicitudes redundantes. El único momento en que esta técnica se ve comprometida es durante los breves periodos de actualización, que pueden generar picos en los tiempos de respuesta.
